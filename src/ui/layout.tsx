@@ -23,17 +23,7 @@ import { initials, label } from '../lib/format'
 export function Logo() {
   return (
     <div className="brand">
-      <span className="brand-symbol">
-        <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
-          <path
-            d="M9 28V14l11 8 11-8v14M9 14l11-7 11 7"
-            stroke="currentColor"
-            strokeWidth="2.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
+      <img className="brand-symbol" src={`${import.meta.env.BASE_URL}logo.svg`} alt="" />
       <span>
         matchlab<span className="brand-caption">Панель администратора</span>
       </span>
