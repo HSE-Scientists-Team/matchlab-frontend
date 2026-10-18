@@ -1,6 +1,12 @@
 name: Build frontend image
 on:
   workflow_dispatch:
+    inputs:
+      propose_deploy:
+        description: Create a deployment PR in matchlab-infra
+        type: boolean
+        required: true
+        default: true
 permissions:
   contents: read
 concurrency:
@@ -11,6 +17,8 @@ jobs:
     uses: ./.github/workflows/ci.yml
   build:
     needs: test
+    outputs:
+      image: ${{ steps.name.outputs.image }}@${{ steps.image.outputs.digest }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -50,3 +58,57 @@ jobs:
           visibility=$(gh api "orgs/$OWNER/packages/container/matchlab-services%2Ffrontend" --jq .visibility)
           test "$visibility" = private
           echo "$IMAGE@$DIGEST" >> "$GITHUB_STEP_SUMMARY"
+
+  propose-deploy:
+    needs: [test, build]
+    if: ${{ inputs.propose_deploy }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: frontend-infra-release-proposals
+      cancel-in-progress: false
+    steps:
+      - name: Check infra token
+        env:
+          INFRA_TOKEN: ${{ secrets.INFRA_REPO_TOKEN }}
+        run: |
+          if [ -z "$INFRA_TOKEN" ]; then
+            echo "::error::Set INFRA_REPO_TOKEN with Contents and Pull requests read/write access to matchlab-infra."
+            exit 1
+          fi
+      - uses: actions/checkout@v5
+        with:
+          path: frontend
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - uses: actions/checkout@v5
+        with:
+          repository: HSE-Scientists-Team/matchlab-infra
+          token: ${{ secrets.INFRA_REPO_TOKEN }}
+          path: infra
+          persist-credentials: false
+      - name: Update only the frontend digest
+        env:
+          IMAGE: ${{ needs.build.outputs.image }}
+        run: node frontend/scripts/update-infra-image.mjs infra/clusters/homelab/images.yaml "$IMAGE"
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          path: infra
+          token: ${{ secrets.INFRA_REPO_TOKEN }}
+          branch: release/frontend-${{ github.sha }}
+          title: 'Release frontend: ${{ github.sha }}'
+          commit-message: 'Update frontend from ${{ github.sha }}'
+          body: |
+            Frontend checks passed and the private image was published in GHCR.
+            Only FRONTEND_IMAGE changes; all backend versions remain unchanged.
+
+            Source: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+            Build: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Flux deploys the image after this PR is merged. This workflow does not merge PRs.
+          add-paths: clusters/homelab/images.yaml

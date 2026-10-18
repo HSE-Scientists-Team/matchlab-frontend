@@ -57,6 +57,7 @@ npm run build
 npm test
 npx playwright install chromium
 npm run test:e2e
+npm run test:container
 ```
 
 Playwright проверяет desktop и mobile, авторизацию, права, фильтры, сохранение редакции, конфликты и явные boolean-поля. Браузерные проверки используют изолированный тестовый API, не обращаясь к рабочей БД. Проверки axe контролируют доступность; снимки создаются в игнорируемой папке test-results.
@@ -70,4 +71,6 @@ docker build -t matchlab-frontend .
 docker run --rm -p 8085:8080 -e GATEWAY_UPSTREAM=http://host.docker.internal:8080 -e DOCS_UPSTREAM=http://host.docker.internal:8084 matchlab-frontend
 ```
 
-Actions → Build frontend image вручную проверяет приложение и публикует приватный образ ghcr.io/hse-scientists-team/matchlab-services/frontend. Digest появляется в отчёте сборки. Deployment, imagePullSecret и Ingress для /admin/ добавляются отдельно в matchlab-infra; этот репозиторий их не хранит.
+Actions → Build frontend image проверяет приложение и публикует приватный образ ghcr.io/hse-scientists-team/matchlab-services/frontend. По умолчанию включён propose_deploy: после успешной сборки создаётся PR в matchlab-infra, меняющий только FRONTEND_IMAGE в clusters/homelab/images.yaml. Остальные версии сохраняются. Слияние выполняется вручную, затем Flux обновляет Deployment. Отключите propose_deploy, если нужна только публикация образа.
+
+Для создания PR нужен GitHub Actions Secret INFRA_REPO_TOKEN: fine-grained PAT с Resource owner HSE-Scientists-Team, доступом только к matchlab-infra, Contents и Pull requests: Read and write. Секрет используется только job создания PR; в образ и приложение не попадает. При истечении токена замените этот Secret. Deployment, registry credentials и Ingress /admin принадлежат matchlab-infra; frontend-приложению секреты не нужны.
