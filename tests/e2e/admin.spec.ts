@@ -94,6 +94,7 @@ test('moderator cannot open staff management and can inspect domains read-only',
   await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toHaveCount(0)
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'hse.ru', exact: true })).toBeFocused()
 })
 test('domain update sends explicit false and no unsupported detail GET', async ({ page }) => {
   await mockAPI(page)

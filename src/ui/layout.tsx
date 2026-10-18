@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import * as Dialog from '@radix-ui/react-dialog'
@@ -53,6 +53,7 @@ const links = [
 export function Layout() {
   const { staff } = useAuth()
   const [mobile, setMobile] = useState(false)
+  const menuOpener = useRef<HTMLElement | null>(null)
   const location = useLocation()
   useEffect(() => {
     setMobile(false)
@@ -108,7 +109,17 @@ export function Layout() {
       <Dialog.Root open={mobile} onOpenChange={setMobile}>
         <Dialog.Portal>
           <Dialog.Overlay className="dialog-overlay" />
-          <Dialog.Content className="mobile-sidebar">
+          <Dialog.Content
+            className="mobile-sidebar"
+            onOpenAutoFocus={() => {
+              menuOpener.current =
+                document.activeElement instanceof HTMLElement ? document.activeElement : null
+            }}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault()
+              if (menuOpener.current?.isConnected) menuOpener.current.focus()
+            }}
+          >
             <Dialog.Title className="sr-only">Навигация</Dialog.Title>
             <Dialog.Description className="sr-only">
               Разделы административной панели

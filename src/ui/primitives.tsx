@@ -3,6 +3,7 @@ import {
   cloneElement,
   isValidElement,
   useId,
+  useRef,
   type ReactNode,
   type ReactElement,
 } from 'react'
@@ -185,11 +186,22 @@ export function Modal({
   onOpenChange: (b: boolean) => void
   children: ReactNode
 }) {
+  const opener = useRef<HTMLElement | null>(null)
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="dialog-overlay" />
-        <Dialog.Content className="dialog">
+        <Dialog.Content
+          className="dialog"
+          onOpenAutoFocus={() => {
+            opener.current =
+              document.activeElement instanceof HTMLElement ? document.activeElement : null
+          }}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault()
+            if (opener.current?.isConnected) opener.current.focus()
+          }}
+        >
           <div className="dialog-heading">
             <Dialog.Title>{title}</Dialog.Title>
             <Dialog.Close className="icon-button" aria-label="Закрыть">
