@@ -8,3 +8,4 @@ test-results/
 !.env.example
 .local/
 .DS_Store
+*.tsbuildinfo
