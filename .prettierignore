@@ -1,0 +1,8 @@
+package-lock.json
+src/api/schema.d.ts
+api/admin.openapi.yaml
+dist/
+node_modules/
+coverage/
+playwright-report/
+test-results/
