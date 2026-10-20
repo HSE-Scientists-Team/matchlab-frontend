@@ -12,8 +12,26 @@ server {
     add_header X-Content-Type-Options nosniff always;
     add_header X-Frame-Options DENY always;
     add_header Referrer-Policy no-referrer always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://api.matchlab.space; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
 
+    location = /.well-known/assetlinks.json {
+        default_type application/json;
+        alias /usr/share/nginx/html/site/assetlinks.json;
+    }
+    location = /verify-email {
+        access_log off;
+        default_type text/html;
+        alias /usr/share/nginx/html/site/verify-email.html;
+    }
+    location = /verify-email/ {
+        access_log off;
+        default_type text/html;
+        alias /usr/share/nginx/html/site/verify-email.html;
+    }
+    location /verification-assets/ {
+        types { application/javascript mjs; text/css css; }
+        alias /usr/share/nginx/html/site/assets/;
+    }
     location = /healthz { access_log off; return 200 "ok"; }
     location = / { return 302 /admin/; }
     location = /admin { return 301 /admin/; }
