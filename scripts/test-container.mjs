@@ -62,7 +62,7 @@ try {
   assert.equal((await links.json())[0].target.package_name, 'org.matchlab.academic_net')
   for (const path of ['/verify-email', '/verify-email/']) {
     const verification = await fetch(base + path + '?token=synthetic-token', { redirect: 'manual' })
-    assert.equal(verification.status, 200)
+    assert.equal(verification.status, 200, `verification page failed at ${path}`)
     assert.equal(verification.headers.get('location'), null)
     assert.equal(verification.headers.get('cache-control'), 'no-store')
     assert.equal(verification.headers.get('referrer-policy'), 'no-referrer')
@@ -90,6 +90,10 @@ try {
   console.log(
     'Container checks passed: non-root/read-only runtime, HTTPS-safe redirect, SPA, cache and security headers',
   )
+} catch (error) {
+  const logs = await docker('logs', name).catch(() => null)
+  if (logs) console.error(logs.stdout, logs.stderr)
+  throw error
 } finally {
   await docker('rm', '--force', name).catch(() => {})
   await docker('image', 'rm', image).catch(() => {})
