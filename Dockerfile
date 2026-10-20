@@ -11,4 +11,5 @@ ENV DOCS_UPSTREAM=http://api-docs:8080
 ENV NGINX_ENVSUBST_FILTER="^(GATEWAY_UPSTREAM|DOCS_UPSTREAM)$"
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html/admin
+COPY web /usr/share/nginx/html/site
 EXPOSE 8080

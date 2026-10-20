@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "org.matchlab.academic_net",
+      "sha256_cert_fingerprints": [
+        "00:2D:35:39:2C:DB:2F:E0:13:C4:46:8E:0F:DE:0A:AB:DE:FE:47:7E:F6:B8:9F:3C:07:4D:9C:90:98:A4:6D:37"
+      ]
+    }
+  }
+]

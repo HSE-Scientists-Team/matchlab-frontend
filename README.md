@@ -74,3 +74,11 @@ docker run --rm -p 8085:8080 -e GATEWAY_UPSTREAM=http://host.docker.internal:808
 Actions → Build frontend image проверяет приложение и публикует приватный образ ghcr.io/hse-scientists-team/matchlab-services/frontend. По умолчанию включён propose_deploy: после успешной сборки создаётся PR в matchlab-infra, меняющий только FRONTEND_IMAGE в clusters/homelab/images.yaml. Остальные версии сохраняются. Слияние выполняется вручную, затем Flux обновляет Deployment. Отключите propose_deploy, если нужна только публикация образа.
 
 Для создания PR нужен GitHub Actions Secret INFRA_REPO_TOKEN: fine-grained PAT с Resource owner HSE-Scientists-Team, доступом только к matchlab-infra, Contents и Pull requests: Read and write. Секрет используется только job создания PR; в образ и приложение не попадает. При истечении токена замените этот Secret. Deployment, registry credentials и Ingress /admin принадлежат matchlab-infra; frontend-приложению секреты не нужны.
+
+## Android App Links и подтверждение почты
+
+Образ также раздаёт `/.well-known/assetlinks.json` и отдельную страницу `/verify-email` (со слешем и без). Связь домена с Android описана в `web/assetlinks.json`: пакет `org.matchlab.academic_net`, только предоставленный SHA-256 сертификата. Дополнительные сертификаты Play App Signing добавляются после получения фактических отпечатков. iOS AASA пока не публикуется: нужны Team ID и окончательный bundle ID.
+
+Веб-страница расходует одноразовый токен только по кнопке; делает POST к `https://api.matchlab.space/api/v1/auth/email/confirm`. Cookie и административный сеанс не отправляются. После успеха токен удаляется из адресной строки. Маршрут не пишет query string в access log, ответы имеют no-store и no-referrer. Приложение открывается через стандартный HTTPS App Link; автоматических переходов на кастомную схему нет.
+
+Админка сохраняет same-origin `/api/v1/admin` через маршрутизацию infra. HTTPS и перенаправления старых адресов описываются в matchlab-infra.
