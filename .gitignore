@@ -9,3 +9,9 @@ test-results/
 .local/
 .DS_Store
 *.tsbuildinfo
+
+# Local Trivy reports and cache
+/trivy-*.sarif
+/trivy_envs.txt
+/.cache/trivy/
+/.trivy-rendered/
